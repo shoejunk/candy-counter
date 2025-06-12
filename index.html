@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Counter - Work Hours Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍭 Candy Counter</h1>
+            <p>Track your candy consumption during work hours (8 AM - 5 PM)</p>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+
+        <main>
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="candyCount">0</span>
+                    <span class="stat-label">Candies Today</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="remainingCount">9</span>
+                    <span class="stat-label">Remaining</span>
+                </div>
+            </div>
+
+            <div class="hours-grid">
+                <div class="hour-slot" data-hour="8">
+                    <div class="time-label">8:00 AM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-8">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="9">
+                    <div class="time-label">9:00 AM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-9">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="10">
+                    <div class="time-label">10:00 AM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-10">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="11">
+                    <div class="time-label">11:00 AM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-11">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="12">
+                    <div class="time-label">12:00 PM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-12">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="13">
+                    <div class="time-label">1:00 PM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-13">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="14">
+                    <div class="time-label">2:00 PM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-14">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="15">
+                    <div class="time-label">3:00 PM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-15">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+                <div class="hour-slot" data-hour="16">
+                    <div class="time-label">4:00 PM</div>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="hour-16">
+                        <span class="checkmark"></span>
+                        <span class="candy-emoji">🍬</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="resetBtn" class="reset-btn">
+                    🔄 Reset Day
+                </button>
+                <div class="current-time" id="currentTime"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Stay healthy and enjoy your treats responsibly! 🌟</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
