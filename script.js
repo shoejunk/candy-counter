@@ -1,7 +1,7 @@
 // Candy Counter App JavaScript
 class CandyTracker {
     constructor() {
-        this.workHours = [8, 9, 10, 11, 12, 13, 14, 15, 16]; // 8 AM to 4 PM (9 hours)
+        this.workHours = [8, 9, 10, 11, 13, 14, 15, 16]; // 8 AM to 4 PM (8 hours, no 12 PM)
         this.storageKey = 'candyTracker';
         this.init();
     }
