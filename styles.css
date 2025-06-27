@@ -322,4 +322,39 @@ footer p {
     .stat-card {
         padding: 20px;
     }
+}
+
+/* Add styles for candy states */
+.hour-slot.unmarked {
+    /* Default styling - no special styles needed */
+}
+
+.hour-slot.eaten {
+    background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+    border-color: #38a169;
+}
+
+.hour-slot.eaten .checkmark {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    border-color: #38a169;
+}
+
+.hour-slot.skipped {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #fed7d7, #feb2b2);
+    border-color: #e53e3e;
+}
+
+.hour-slot.skipped .time-label {
+    color: #718096;
+    text-decoration: line-through;
+}
+
+.hour-slot.skipped .checkmark {
+    background-color: #fed7d7;
+    border-color: #e53e3e;
+}
+
+.hour-slot.skipped .candy-emoji {
+    filter: grayscale(50%);
 } 

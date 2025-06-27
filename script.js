@@ -3,6 +3,11 @@ class CandyTracker {
     constructor() {
         this.workHours = [8, 9, 10, 11, 13, 14, 15, 16]; // 8 AM to 4 PM (8 hours, no 12 PM)
         this.storageKey = 'candyTracker';
+        this.STATES = {
+            UNMARKED: 'unmarked',
+            EATEN: 'eaten',
+            SKIPPED: 'skipped'
+        };
         this.init();
     }
 
@@ -15,6 +20,9 @@ class CandyTracker {
         
         // Check if it's a new day and reset if needed
         this.checkNewDay();
+        
+        // Mark skipped candies on load
+        this.markSkippedCandies();
     }
 
     loadData() {
@@ -29,11 +37,17 @@ class CandyTracker {
             }
         }
         
-        // Initialize new day data
+        // Initialize new day data - all candies start as unmarked
         this.data = {
             date: today,
-            checkedHours: {}
+            candyStates: {}
         };
+        
+        // Initialize all hours as unmarked
+        this.workHours.forEach(hour => {
+            this.data.candyStates[hour] = this.STATES.UNMARKED;
+        });
+        
         this.saveData();
     }
 
@@ -48,17 +62,36 @@ class CandyTracker {
         }
     }
 
-    setupEventListeners() {
-        // Add event listeners for checkboxes
+    markSkippedCandies() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        let hasChanges = false;
+        
+        // Mark any past unmarked hours as skipped
         this.workHours.forEach(hour => {
-            const checkbox = document.getElementById(`hour-${hour}`);
-            if (checkbox) {
-                checkbox.addEventListener('change', (e) => {
-                    this.handleCheckboxChange(hour, e.target.checked);
+            if (hour < currentHour && this.data.candyStates[hour] === this.STATES.UNMARKED) {
+                this.data.candyStates[hour] = this.STATES.SKIPPED;
+                hasChanges = true;
+            }
+        });
+        
+        if (hasChanges) {
+            this.saveData();
+            this.updateAllSlots();
+            this.updateStats();
+        }
+    }
+
+    setupEventListeners() {
+        // Add event listeners for hour slots (not just checkboxes)
+        this.workHours.forEach(hour => {
+            const hourSlot = document.querySelector(`[data-hour="${hour}"]`);
+            if (hourSlot) {
+                hourSlot.addEventListener('click', (e) => {
+                    // Prevent double-clicking on checkbox
+                    e.preventDefault();
+                    this.handleSlotClick(hour);
                 });
-                
-                // Set initial state
-                checkbox.checked = this.data.checkedHours[hour] || false;
             }
         });
 
@@ -71,15 +104,70 @@ class CandyTracker {
         }
     }
 
-    handleCheckboxChange(hour, isChecked) {
-        this.data.checkedHours[hour] = isChecked;
+    handleSlotClick(hour) {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentState = this.data.candyStates[hour];
+        
+        let newState;
+        
+        if (currentState === this.STATES.UNMARKED) {
+            // Unmarked -> Eaten
+            newState = this.STATES.EATEN;
+        } else if (currentState === this.STATES.EATEN) {
+            // Eaten -> Unmarked (if current/future hour) or Skipped (if past hour)
+            newState = hour >= currentHour ? this.STATES.UNMARKED : this.STATES.SKIPPED;
+        } else if (currentState === this.STATES.SKIPPED) {
+            // Skipped -> Eaten (override allowed)
+            newState = this.STATES.EATEN;
+        }
+        
+        this.data.candyStates[hour] = newState;
         this.saveData();
+        this.updateSlot(hour);
         this.updateStats();
         
-        // Add visual feedback
-        if (isChecked) {
+        // Show celebration for eating candy
+        if (newState === this.STATES.EATEN) {
             this.showCandyEaten();
         }
+    }
+
+    updateSlot(hour) {
+        const hourSlot = document.querySelector(`[data-hour="${hour}"]`);
+        const checkbox = document.getElementById(`hour-${hour}`);
+        const candyEmoji = hourSlot?.querySelector('.candy-emoji');
+        
+        if (!hourSlot || !checkbox || !candyEmoji) return;
+        
+        const state = this.data.candyStates[hour];
+        
+        // Remove all state classes
+        hourSlot.classList.remove('eaten', 'skipped', 'unmarked');
+        
+        switch (state) {
+            case this.STATES.UNMARKED:
+                hourSlot.classList.add('unmarked');
+                checkbox.checked = false;
+                candyEmoji.textContent = '🍬';
+                break;
+            case this.STATES.EATEN:
+                hourSlot.classList.add('eaten');
+                checkbox.checked = true;
+                candyEmoji.textContent = '🍬';
+                break;
+            case this.STATES.SKIPPED:
+                hourSlot.classList.add('skipped');
+                checkbox.checked = false;
+                candyEmoji.textContent = '❌';
+                break;
+        }
+    }
+
+    updateAllSlots() {
+        this.workHours.forEach(hour => {
+            this.updateSlot(hour);
+        });
     }
 
     showCandyEaten() {
@@ -127,17 +215,18 @@ class CandyTracker {
     }
 
     updateStats() {
-        const candyCount = Object.values(this.data.checkedHours).filter(Boolean).length;
-        const remainingCount = this.workHours.length - candyCount;
+        const eatenCount = Object.values(this.data.candyStates).filter(state => state === this.STATES.EATEN).length;
+        const unmarkedCount = Object.values(this.data.candyStates).filter(state => state === this.STATES.UNMARKED).length;
         
         const candyCountEl = document.getElementById('candyCount');
         const remainingCountEl = document.getElementById('remainingCount');
         
-        if (candyCountEl) candyCountEl.textContent = candyCount;
-        if (remainingCountEl) remainingCountEl.textContent = remainingCount;
+        if (candyCountEl) candyCountEl.textContent = eatenCount;
+        if (remainingCountEl) remainingCountEl.textContent = unmarkedCount;
     }
 
     updateDisplay() {
+        this.updateAllSlots();
         this.updateStats();
         this.updateDate();
     }
@@ -188,9 +277,10 @@ class CandyTracker {
                 timeEl.textContent = timeString;
             }
             
-            // Update current hour highlight every minute
+            // Update current hour highlight and check for skipped candies every minute
             if (now.getSeconds() === 0) {
                 this.highlightCurrentHour();
+                this.markSkippedCandies();
             }
         };
         
@@ -200,23 +290,21 @@ class CandyTracker {
 
     resetDay() {
         // Show confirmation dialog
-        if (confirm('Are you sure you want to reset your candy tracker for today? This will uncheck all boxes.')) {
+        if (confirm('Are you sure you want to reset your candy tracker for today? This will reset all candies to unmarked.')) {
             // Reset data
             this.data = {
                 date: new Date().toDateString(),
-                checkedHours: {}
+                candyStates: {}
             };
             
-            // Reset checkboxes
+            // Initialize all hours as unmarked
             this.workHours.forEach(hour => {
-                const checkbox = document.getElementById(`hour-${hour}`);
-                if (checkbox) {
-                    checkbox.checked = false;
-                }
+                this.data.candyStates[hour] = this.STATES.UNMARKED;
             });
             
             this.saveData();
             this.updateDisplay();
+            this.markSkippedCandies(); // Re-mark any candies that should be skipped
             
             // Show reset confirmation
             this.showResetConfirmation();
@@ -269,15 +357,17 @@ class CandyTracker {
 
     // Method to get current stats (useful for debugging or future features)
     getStats() {
-        const candyCount = Object.values(this.data.checkedHours).filter(Boolean).length;
-        const remainingCount = this.workHours.length - candyCount;
-        const completionPercentage = Math.round((candyCount / this.workHours.length) * 100);
+        const eatenCount = Object.values(this.data.candyStates).filter(state => state === this.STATES.EATEN).length;
+        const skippedCount = Object.values(this.data.candyStates).filter(state => state === this.STATES.SKIPPED).length;
+        const unmarkedCount = Object.values(this.data.candyStates).filter(state => state === this.STATES.UNMARKED).length;
+        const completionPercentage = Math.round((eatenCount / this.workHours.length) * 100);
         
         return {
-            candyCount,
-            remainingCount,
+            eatenCount,
+            skippedCount,
+            unmarkedCount,
             completionPercentage,
-            workHours: this.workHours.length
+            totalHours: this.workHours.length
         };
     }
 }
@@ -302,11 +392,7 @@ document.addEventListener('keydown', (e) => {
         const hourIndex = parseInt(e.key) - 1;
         if (window.candyTracker && hourIndex < window.candyTracker.workHours.length) {
             const hour = window.candyTracker.workHours[hourIndex];
-            const checkbox = document.getElementById(`hour-${hour}`);
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                checkbox.dispatchEvent(new Event('change'));
-            }
+            window.candyTracker.handleSlotClick(hour);
         }
     }
 }); 
